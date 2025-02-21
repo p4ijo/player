@@ -1,9 +1,4 @@
-// Server Node.js
-const express = require('express');
-const app = express();
 
-app.get('/', (req, res) => {
-  res.send(`
     <html>
       <body>
         <div id="player"></div>
@@ -24,7 +19,5 @@ app.get('/', (req, res) => {
         </script>
       </body>
     </html>
-  `);
-});
 
-app.listen(3000);
+
