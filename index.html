@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pemutar Video YouTube</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            background-color: black;
+        }
+        #playerContainer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: black;
+        }
+        #player {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+        }
+	.ytp-chrome-top, .ytp-chrome-bottom, .ytp-watermark {
+            display: none !important;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+	<div id="overlay"></div>
+    <div id="playerContainer">
+        <div id="player"></div>
+        
+    </div>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        var player;
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'anMYu17aZT4',
+                playerVars: { controls: 0, modestbranding: 1, rel: 0, showinfo: 0, iv_load_policy: 3, cc_load_policy: 0 },
+                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        function onPlayerReady(event) {
+            const checkDuration = () => {
+                const duration = player.getDuration();
+                if (duration > 0) {
+                    window.chrome.webview.postMessage(JSON.stringify({ type: 'SetMaxDuration', duration }));
+                } else {
+                    setTimeout(checkDuration, 100);
+                }
+            };
+            checkDuration();
+        }
+        
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                setInterval(() => {
+                    window.chrome.webview.postMessage(JSON.stringify({ type: 'SetCurrentTime', currentTime: player.getCurrentTime() }));
+                }, 500);
+            }
+        }
+
+        function loadVideo(videoId) { player.loadVideoById(videoId); }
+        function playVideo() { player.playVideo(); }
+        function pauseVideo() { player.pauseVideo(); }
+        function stopVideo() { player.stopVideo(); }
+        function setVolume(value) { player.setVolume(value); }
+        function seekTo(value) { player.seekTo(value, true); }
+
+        // Mencegah menu konteks muncul pada klik kanan
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
